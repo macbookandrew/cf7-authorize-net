@@ -1,0 +1,33 @@
+{
+  "name": "cf7-authorize-net",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macbookandrew/cf7-authorize-net.git"
+  },
+  "author": "AndrewRMinion Design",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/macbookandrew/cf7-authorize-net/issues"
+  },
+  "homepage": "https://github.com/macbookandrew/cf7-authorize-net#readme",
+  "devDependencies": {
+    "autoprefixer": "^6.3.4",
+    "cssnano": "^3.5.2",
+    "grunt": "^0.4.5",
+    "grunt-browser-sync": "^2.2.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-postcss": "^0.8.0",
+    "grunt-sass": "^1.2.0",
+    "grunt-wp-i18n": "^1.0.0",
+    "grunt-wp-readme-to-markdown": "^2.0.1",
+    "pixrem": "^3.0.0",
+    "postcss": "^5.0.19"
+  }
+}
