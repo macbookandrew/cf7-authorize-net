@@ -9,6 +9,98 @@
  * GitHub Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
  */
 
-if (!defined('ABSPATH')) {
+
+/* prevent this file from being accessed directly */
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
+}
+
+/* add settings page */
+add_action( 'admin_menu', 'cf7_authorize_add_admin_menu' );
+add_action( 'admin_init', 'cf7_authorize_settings_init' );
+
+// add to menu
+function cf7_authorize_add_admin_menu() {
+    add_options_page( 'Contact Form 7 to Authorize.net', 'CF7&rarr;Authorize.net', 'manage_options', 'cf7_authorize_net', 'cf7_authorize_options_page' );
+}
+
+// add settings section and fields
+function cf7_authorize_settings_init() {
+    register_setting( 'cf7_authorize_options', 'cf7_authorize_settings' );
+
+    // API settings
+    add_settings_section(
+        'cf7_authorize_options_keys_section',
+        __( 'Add your API Keys', 'cf7_authorize' ),
+        'cf7_authorize_api_settings_section_callback',
+        'cf7_authorize_options'
+    );
+
+    add_settings_field(
+        'cf7_authorize_api_login_id',
+        __( 'API Login ID', 'cf7_authorize' ),
+        'cf7_authorize_api_login_id_render',
+        'cf7_authorize_options',
+        'cf7_authorize_options_keys_section'
+    );
+
+    add_settings_field(
+        'cf7_authorize_api_transaction_key',
+        __( 'API Transaction Key', 'cf7_authorize' ),
+        'cf7_authorize_api_transaction_key_render',
+        'cf7_authorize_options',
+        'cf7_authorize_options_keys_section'
+    );
+
+    add_settings_field(
+        'cf7_authorize_environment',
+        __( 'Environment', 'cf7_authorize' ),
+        'cf7_authorize_environment_render',
+        'cf7_authorize_options',
+        'cf7_authorize_options_keys_section'
+    );
+}
+
+// print API ID field
+function cf7_authorize_api_login_id_render() {
+    $options = get_option( 'cf7_authorize_settings' ); ?>
+    <input type="text" name="cf7_authorize_settings[cf7_authorize_api_login_id]" placeholder="5NaF7aL34G" size="20" value="<?php echo $options['cf7_authorize_api_login_id']; ?>">
+    <?php
+}
+
+// print API Key field
+function cf7_authorize_api_transaction_key_render() {
+    $options = get_option( 'cf7_authorize_settings' ); ?>
+    <input type="text" name="cf7_authorize_settings[cf7_authorize_api_transaction_key]" placeholder="2z1aGdL1534fbG2c" size="20" value="<?php echo $options['cf7_authorize_api_transaction_key']; ?>">
+    <?php
+}
+
+// print environment email field
+function cf7_authorize_environment_render() {
+    $environment = get_option( 'cf7_authorize_settings' )['cf7_authorize_environment']; ?>
+    <label><input type="radio" name="cf7_authorize_settings[cf7_authorize_environment]" value="production" <?php checked( $environment, 'production' ); ?>> Production</label>
+    <label><input type="radio" name="cf7_authorize_settings[cf7_authorize_environment]" value="sandbox" <?php checked( $environment, 'sandbox' ); ?>> Sandbox</label>
+    <?php
+}
+
+// print API settings description
+function cf7_authorize_api_settings_section_callback() {
+    echo __( 'Enter your API Login ID and API Transaction Key below. <a href="https://support.authorize.net/authkb/index?page=content&id=A682" target="_blank">Instructions to locate them</a>.', 'cf7_authorize' );
+}
+
+// print form
+function cf7_authorize_options_page() { ?>
+    <div class="wrap">
+       <h2>Contact Form 7 to Authorize.net</h2>
+        <form action="options.php" method="post">
+
+            <?php
+            settings_fields( 'cf7_authorize_options' );
+            do_settings_sections( 'cf7_authorize_options' );
+            submit_button();
+            ?>
+
+        </form>
+    </div>
+    <?php
 }
