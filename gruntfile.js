@@ -17,6 +17,7 @@ module.exports = function (grunt) {
     uglify: {
         custom: {
             files: {
+                'js/cf7-authorize-backend.min.js': 'js/cf7-authorize-backend.js'
             },
         },
     },
@@ -26,6 +27,7 @@ module.exports = function (grunt) {
                 style: 'compressed'
             },
             files: {
+                'css/cf7-authorize.min.css': 'css/cf7-authorize.scss'
             }
         }
     },
@@ -43,7 +45,7 @@ module.exports = function (grunt) {
             ]
         },
         dist: {
-            src: 'css/course-search.min.css',
+            src: 'css/*.min.css',
         }
     },
     browserSync: {
