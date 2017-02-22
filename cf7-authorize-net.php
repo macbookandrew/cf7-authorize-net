@@ -225,7 +225,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
     // add all CF7 fields to Authorize.net settings fields
     foreach ( $all_fields as $this_field ) {
         $this_authorize_field_list = $settings['fields'][$this_field];
-        $this_field_options = NULL;
+        $this_field_options = $fields_options;
         if ( is_array( $this_authorize_field_list ) ) {
             foreach ( $this_authorize_field_list as $this_authorize_field ) {
                 $this_field_options = str_replace( $this_authorize_field . '">', $this_authorize_field . '" selected="selected">', $fields_options );
