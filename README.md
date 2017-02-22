@@ -15,7 +15,7 @@ Adds Authorize.net support to Contact Form 7 forms, adding the capability to mat
 
 ## Installation ##
 1. Install the plugin
-1. Go to Settings > CF7 Authorize.net to set your API keys
+1. Go to Settings > CF7→Authorize.net to set your API keys
 1. Edit a form and go to the “Authorize.net” tab to set the payment settings
 
 ## Changelog ##
