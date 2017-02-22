@@ -370,3 +370,130 @@ function cf7_authorize_get_form_settings( $form_id, $field = null, $fresh = fals
     return $settings;
 }
 
+/* hook into WPCF7 submission */
+add_action( 'wpcf7_before_send_mail', 'cf7_authorize_submit_to_authorize', 10, 1 );
+function cf7_authorize_submit_to_authorize( $form ) {
+    global $wpdb;
+
+    // get API keys
+    $options = get_option( 'cf7_authorize_settings' );
+
+    // get posted data
+    $submission = WPCF7_Submission::get_instance();
+    if ( $submission ) {
+        $posted_data = $submission->get_posted_data();
+    }
+    $settings = cf7_authorize_get_form_settings( $posted_data['_wpcf7'], NULL, true );
+
+    // get array keys for form data
+    if ( $settings['fields'] ) {
+        $field_matches = array();
+        foreach( $settings['fields'] as $id => $field ) {
+            foreach ( $field as $this_field ) {
+                $field_matches[$this_field] = urlencode( $id );
+            }
+        }
+    }
+
+    // set transaction type
+    if ( 'capture' == $settings['authorization-type'] ) {
+        $transaction_type = 'authCaptureTransaction';
+    } elseif ( 'authorize' == $settings['authorization-type'] ) {
+        $transaction_type = 'authOnlyTransaction';
+    }
+
+    // set up API credentials
+    $merchantAuthentication = new AnetAPI\MerchantAuthenticationType();
+    $merchantAuthentication->setName( $options['cf7_authorize_api_login_id'] );
+    $merchantAuthentication->setTransactionKey( $options['cf7_authorize_api_transaction_key'] );
+
+    // create the payment data for a credit card
+    $creditCard = new AnetAPI\CreditCardType();
+    $creditCard->setCardNumber( $posted_data[$field_matches['cardnumber']] );
+    $creditCard->setExpirationDate( $posted_data[$field_matches['expmonth']] . '-' . $posted_data[$field_matches['expyear']] );
+    $paymentOne = new AnetAPI\PaymentType();
+    $paymentOne->setCreditCard( $creditCard );
+
+    // create a transaction
+    $transactionRequestType = new AnetAPI\TransactionRequestType();
+    $transactionRequestType->setTransactionType( $transaction_type );
+    $transactionRequestType->setAmount( $posted_data[$field_matches['amount']] );
+    $transactionRequestType->setPayment( $paymentOne );
+
+    // send transaction
+    $request = new AnetAPI\CreateTransactionRequest();
+    $request->setMerchantAuthentication( $merchantAuthentication );
+    $request->setTransactionRequest( $transactionRequestType );
+    $controller = new AnetController\CreateTransactionController( $request );
+    if ( 'sandbox' == $options['cf7_authorize_environment'] ) {
+        $response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::SANDBOX);
+    } else {
+        $response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::PRODUCTION);
+    }
+
+    // handle the response
+    if ( $response != NULL ) {
+        $tresponse = $response->getTransactionResponse();
+    }
+
+    add_filter( 'wpcf7_form_response_output', function( $output, $class, $content ) use ( $tresponse ) {
+        return cf7_authorize_response( $output, $class, $content, $tresponse );
+    }, 10, 3 );
+
+    add_filter( 'wpcf7_ajax_json_echo', function( $items, $result ) use ( $tresponse ) {
+        return cf7_authorize_response_json( $items, $result, $tresponse );
+    }, 10, 2 );
+}
+
+/**
+ * Add custom content to WPCF7 output response
+ * @param  string $output  HTML string of output
+ * @param  string $class   string with HTML classes for the wrapper
+ * @param  string $content string with response from WPCF7 plugin
+ * @return string HTML string of output
+ */
+function cf7_authorize_response( $output, $class, $content, $tresponse ) {
+    if ( $tresponse->getResponseCode() == '1' ) {
+        $output .= str_replace( '</div>', '<br/>Approval code: ' . $tresponse->getAuthCode() . '<br/>Transaction ID: ' . $tresponse->getTransId() . '</div>', $output );
+    } elseif ( $tresponse->getResponseCode() == '2' ) {
+        $output = '<div class="wpcf7-response-output wpcf7-validation-errors">Error: Declined. Please contact us or your card issuer for more information.<br/>';
+        foreach ( $tresponse->getErrors() as $error ) {
+            $output .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
+        }
+        $output .= '</div>';
+    } elseif ( $tresponse->getResponseCode() == '3' ) {
+        $output = '<div class="wpcf7-response-output wpcf7-validation-errors">Error. Please contact us or your card issuer for more information.<br/>';
+        foreach ( $tresponse->getErrors() as $error ) {
+            $output .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
+        }
+        $output .= '</div>';
+    }
+
+    return $output;
+}
+
+/**
+ * Add custom content to WPCF7 output JSON response
+ * @param  array  $items  array of response info
+ * @param  array  $result array of results
+ * @return array array of responses to show
+ */
+function cf7_authorize_response_json( $items, $result, $tresponse ) {
+    if ( $tresponse->getResponseCode() == '1' ) {
+        $items['message'] .= '<br/>Approval code: ' . $tresponse->getAuthCode() . '<br/>Transaction ID: ' . $tresponse->getTransId();
+    } elseif ( $tresponse->getResponseCode() == '2' ) {
+        $items['message'] = 'Error: Declined. Please contact us or your card issuer for more information.<br/>';
+        foreach ( $tresponse->getErrors() as $error ) {
+            $items['message'] .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
+        }
+        $items['mailSent'] = false;
+    } elseif ( $tresponse->getResponseCode() == '3' ) {
+        $items['message'] = 'Error. Please contact us or your card issuer for more information.<br/>';
+        foreach ( $tresponse->getErrors() as $error ) {
+            $items['message'] .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
+        }
+        $items['mailSent'] = false;
+    }
+
+    return $items;
+}
