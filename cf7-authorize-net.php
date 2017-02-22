@@ -19,8 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 require( 'authorize-sdk/autoload.php' );
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
-define("AUTHORIZENET_LOG_FILE", "phplog");
-
 
 /* register scripts */
 add_action( 'admin_enqueue_scripts', 'cf7_robly_scripts' );
