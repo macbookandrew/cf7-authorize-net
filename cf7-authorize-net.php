@@ -74,20 +74,24 @@ function cf7_authorize_settings_init() {
 // print API ID field
 function cf7_authorize_api_login_id_render() {
     $options = get_option( 'cf7_authorize_settings' ); ?>
-    <input type="text" name="cf7_authorize_settings[cf7_authorize_api_login_id]" placeholder="5NaF7aL34G" size="20" value="<?php echo $options['cf7_authorize_api_login_id']; ?>">
+    <input type="text" name="cf7_authorize_settings[cf7_authorize_api_login_id]" placeholder="5NaF7aL34G" size="20" value="<?php echo ( ( is_array( $options ) && array_key_exists( 'cf7_authorize_api_login_id', $options ) ) ? $options['cf7_authorize_api_login_id'] : NULL ); ?>">
     <?php
 }
 
 // print API Key field
 function cf7_authorize_api_transaction_key_render() {
     $options = get_option( 'cf7_authorize_settings' ); ?>
-    <input type="text" name="cf7_authorize_settings[cf7_authorize_api_transaction_key]" placeholder="2z1aGdL1534fbG2c" size="20" value="<?php echo $options['cf7_authorize_api_transaction_key']; ?>">
+    <input type="text" name="cf7_authorize_settings[cf7_authorize_api_transaction_key]" placeholder="2z1aGdL1534fbG2c" size="20" value="<?php echo ( ( is_array( $options ) && array_key_exists( 'cf7_authorize_api_transaction_key', $options ) ) ? $options['cf7_authorize_api_transaction_key'] : NULL ); ?>">
     <?php
 }
 
-// print environment email field
+// print environment field
 function cf7_authorize_environment_render() {
-    $environment = get_option( 'cf7_authorize_settings' )['cf7_authorize_environment']; ?>
+    $environment = get_option( 'cf7_authorize_settings' )['cf7_authorize_environment'];
+    if ( ! isset( $environment ) ) {
+        $environment = 'production';
+    }
+    ?>
     <label><input type="radio" name="cf7_authorize_settings[cf7_authorize_environment]" value="production" <?php checked( $environment, 'production' ); ?>> Production</label>
     <label><input type="radio" name="cf7_authorize_settings[cf7_authorize_environment]" value="sandbox" <?php checked( $environment, 'sandbox' ); ?>> Sandbox</label>
     <?php
@@ -138,6 +142,12 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
     $saved_fields = isset( $settings['fields'] ) ? $settings['fields'] : NULL;
     $ignore_form = isset( $settings['ignore-form'] ) ? $settings['ignore-form'] : NULL;
     $authorization_type = isset( $settings['authorization-type'] ) ? $settings['authorization-type'] : 'capture';
+    $cf7_authorize_settings = get_option( 'cf7_authorize_settings' );
+
+    // check for API and transaction keys
+    if ( ! is_array( $cf7_authorize_settings ) || ( array_key_exists( 'cf7_authorize_api_login_id', $cf7_authorize_settings ) && ! isset( $cf7_authorize_settings['cf7_authorize_api_login_id'] ) ) || ( array_key_exists( 'cf7_authorize_api_transaction_key', $cf7_authorize_settings ) && ! isset( $cf7_authorize_settings['cf7_authorize_api_transaction_key'] ) ) ) {
+        $message = 'Note: you <strong>must</strong> add your API Login ID and API Transaction Key on the <a href="' . get_admin_url() . '/options-general.php?page=cf7_authorize_net">settings page</a>.';
+    }
 
     wp_enqueue_script( 'chosen' );
     wp_enqueue_style( 'chosen' );
@@ -271,13 +281,14 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
         );
 
     printf(
-        '<p class="cf7-authorize-message"></p>
+        '<p class="cf7-authorize-message">%3$s</p>
         <table class="form-table cf7-authorize-table">
             %1$s
         </table>
         <p><button class="cf7-authorize-add-custom-field button-secondary" %2$s>Add a custom field</button></p>',
         implode( '', $rows ),
-        $ignore_form ? 'disabled' : ''
+        $ignore_form ? 'disabled' : '',
+        $message
     );
 
 }
