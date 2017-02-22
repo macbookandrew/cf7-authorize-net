@@ -173,27 +173,35 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 
     // list of supported Authorize.net fields
     $authorize_fields = array(
-        'amount'        => 'Total Purchase Amount',
-        'cardnumber'    => 'Credit Card Number',
-        'expmonth'      => 'Expiration Month',
-        'expyear'       => 'Expiration Year',
-        'cvv'           => 'CVV Code',
-        'fname'         => 'First Name',
-        'lname'         => 'Last Name',
-        'address1'      => 'Street Address 1',
-        'address2'      => 'Street Address 2',
-        'city'          => 'City',
-        'state'         => 'State',
-        'postalcode'    => 'Zip Code',
-        'country'       => 'Country',
-        'email'         => 'Email Address',
-        'phone'         => 'Phone Number',
+        'Card Info'  => array(
+            'amount'        => 'Total Purchase Amount',
+            'cardnumber'    => 'Credit Card Number',
+            'expmonth'      => 'Expiration Month',
+            'expyear'       => 'Expiration Year',
+            'cvv'           => 'CVV Code',
+        ),
+        'Billing Info'  => array(
+            'fname'         => 'First Name',
+            'lname'         => 'Last Name',
+            'address1'      => 'Street Address 1',
+            'address2'      => 'Street Address 2',
+            'city'          => 'City',
+            'state'         => 'State',
+            'postalcode'    => 'Zip Code',
+            'country'       => 'Country',
+            'email'         => 'Email Address',
+            'phone'         => 'Phone Number',
+        ),
     );
 
     // HTML string of Authorize.net fields
     $fields_options = '';
-    foreach ( $authorize_fields as $id => $label ) {
-        $fields_options .= '<option value="' . $id . '">' . $label . '</option>';
+    foreach ( $authorize_fields as $key => $group ) {
+        $fields_options .= '<optgroup label="' . $key . '">';
+        foreach ( $group as $id => $label ) {
+            $fields_options .= '<option value="' . $id . '">' . $label . '</option>';
+        }
+        $fields_options .= '</optgroup>';
     }
 
     // start setting up Authorize.net settings fields
