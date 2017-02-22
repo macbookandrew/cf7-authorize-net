@@ -15,6 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/* register scripts */
+add_action( 'admin_enqueue_scripts', 'cf7_robly_scripts' );
+function cf7_robly_scripts() {
+    wp_register_script( 'chosen', plugins_url( 'js/chosen.jquery.min.js', __FILE__ ), array( 'jquery' ) );
+    wp_register_style( 'chosen', plugins_url( 'css/chosen.min.css', __FILE__ ) );
+
+    wp_register_script( 'cf7-authorize-backend', plugins_url( 'js/cf7-authorize-backend.min.js', __FILE__ ), array( 'jquery', 'chosen' ) );
+    wp_register_style( 'cf7-authorize', plugins_url( 'css/cf7-authorize.min.css', __FILE__ ), array( 'chosen' ) );
+}
+
 /* add settings page */
 add_action( 'admin_menu', 'cf7_authorize_add_admin_menu' );
 add_action( 'admin_init', 'cf7_authorize_settings_init' );
