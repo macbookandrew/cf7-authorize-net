@@ -232,7 +232,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
                 <p class="desc"><label for="cf7-authorize[authorization-type]">%3$s</ignore></p>',
                 checked( $authorization_type, 'capture', false ),
                 checked( $authorization_type, 'authorize', false ),
-                'Authorize-and-capture payment or authorize-only.'
+                'Type of transaction'
             ),
         ),
     );
