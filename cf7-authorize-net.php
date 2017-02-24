@@ -3,7 +3,7 @@
  * Plugin Name: Contact Form 7 to Authorize.net
  * Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
  * Description: Handles payment from Contact Form 7 forms through Authorize.net
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: AndrewRMinion Design
  * Author URI: https://andrewrminion.com
  * GitHub Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
@@ -178,24 +178,41 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 
     // list of supported Authorize.net fields
     $authorize_fields = array(
-        'Card Info'  => array(
-            'amount'        => 'Total Purchase Amount',
+        'Card Info'     => array(
             'cardnumber'    => 'Credit Card Number',
             'expmonth'      => 'Expiration Month',
             'expyear'       => 'Expiration Year',
             'cvv'           => 'CVV Code',
         ),
         'Billing Info'  => array(
-            'fname'         => 'First Name',
-            'lname'         => 'Last Name',
-            'address1'      => 'Street Address 1',
-            'address2'      => 'Street Address 2',
-            'city'          => 'City',
-            'state'         => 'State',
-            'postalcode'    => 'Zip Code',
-            'country'       => 'Country',
-            'email'         => 'Email Address',
-            'phone'         => 'Phone Number',
+            'billing_fname'         => 'First Name',
+            'billing_lname'         => 'Last Name',
+            'billing_company'       => 'Company',
+            'billing_address'       => 'Street Address',
+            'billing_city'          => 'City',
+            'billing_state'         => 'State',
+            'billing_postalcode'    => 'Zip Code',
+            'billing_country'       => 'Country',
+            'billing_email'         => 'Email Address',
+            'billing_phone'         => 'Phone Number',
+            'billing_fax'           => 'Fax Number',
+        ),
+        'Shipping Info'  => array(
+            'shipping_fname'         => 'First Name',
+            'shipping_lname'         => 'Last Name',
+            'shipping_company'       => 'Company',
+            'shipping_address'       => 'Street Address',
+            'shipping_city'          => 'City',
+            'shipping_state'         => 'State',
+            'shipping_postalcode'    => 'Zip Code',
+            'shipping_country'       => 'Country',
+        ),
+        'Order Info'    => array(
+            'description'       => 'Order Description',
+            'invoicenum'        => 'Invoice Number',
+            'shipping'          => 'Shipping Amount',
+            'taxamount'         => 'Tax Amount',
+            'ordertotal'        => 'Total Purchase Amount',
         ),
     );
 
@@ -390,10 +407,11 @@ function cf7_authorize_submit_to_authorize( $form ) {
         $field_matches = array();
         foreach( $settings['fields'] as $id => $field ) {
             foreach ( $field as $this_field ) {
-                $field_matches[$this_field] = urlencode( $id );
+                $field_matches[$this_field] = $id;
             }
         }
     }
+    $form_title = get_the_title($posted_data['_wpcf7']);
 
     // set transaction type
     if ( 'capture' == $settings['authorization-type'] ) {
@@ -410,20 +428,60 @@ function cf7_authorize_submit_to_authorize( $form ) {
     // create the payment data for a credit card
     $creditCard = new AnetAPI\CreditCardType();
     $creditCard->setCardNumber( $posted_data[$field_matches['cardnumber']] );
+    $creditCard->setCardCode( $posted_data[$field_matches['cvv']] );
     $creditCard->setExpirationDate( $posted_data[$field_matches['expmonth']] . '-' . $posted_data[$field_matches['expyear']] );
-    $paymentOne = new AnetAPI\PaymentType();
-    $paymentOne->setCreditCard( $creditCard );
+    $paymentType = new AnetAPI\PaymentType();
+    $paymentType->setCreditCard( $creditCard );
+
+    // add billing info
+    $customerAddress = new AnetAPI\CustomerAddressType();
+    $customerData = new AnetAPI\CustomerDataType();
+    $customerAddress->setFirstName( $posted_data[$field_matches['billing_fname']] );
+    $customerAddress->setLastName( $posted_data[$field_matches['billing_lname']] );
+    $customerAddress->setCompany( $posted_data[$field_matches['billing_company']] );
+    $customerAddress->setAddress( $posted_data[$field_matches['billing_address']] );
+    $customerAddress->setCity( $posted_data[$field_matches['billing_city']] );
+    $customerAddress->setState( $posted_data[$field_matches['billing_state']] );
+    $customerAddress->setZip( $posted_data[$field_matches['billing_postalcode']] );
+    $customerAddress->setCountry( ( array_key_exists( 'billing_country', $field_matches ) ? $posted_data[$field_matches['country']] : 'US' ) );
+    $customerAddress->setEmail( $posted_data[$field_matches['billing_email']] );
+    $customerData->setEmail( $posted_data[$field_matches['billing_email']] );
+    $customerAddress->setPhoneNumber( $posted_data[$field_matches['billing_phone']] );
+    $customerAddress->setFaxNumber( $posted_data[$field_matches['billing_fax']] );
+
+    // add shipping info
+    $shippingAddress = new AnetAPI\NameAndAddressType();
+    $shippingAddress->setFirstName( $posted_data[$field_matches['shipping_fname']] );
+    $shippingAddress->setLastName( $posted_data[$field_matches['shipping_lname']] );
+    $shippingAddress->setCompany( $posted_data[$field_matches['shipping_company']] );
+    $shippingAddress->setAddress( $posted_data[$field_matches['shipping_address']] );
+    $shippingAddress->setCity( $posted_data[$field_matches['shipping_city']] );
+    $shippingAddress->setState( $posted_data[$field_matches['shipping_state']] );
+    $shippingAddress->setZip( $posted_data[$field_matches['shipping_postalcode']] );
+    $shippingAddress->setCountry( ( array_key_exists( 'shipping_country', $field_matches ) ? $posted_data[$field_matches['country']] : 'US' ) );
+
+    // add order info
+    $order = new AnetAPI\OrderType();
+    $paymentDetails = new AnetAPI\PaymentDetailsType();
+    $order->setInvoiceNumber( $posted_data[$field_matches['invoicenum']] );
+    $order->setDescription( ( array_key_exists( 'description', $field_matches ) ? $posted_data[$field_matches['description']] : $form_title ) );
+    $paymentDetails->setShippingHandling( $posted_data[$field_matches['shipping']] );
+    $paymentDetails->setTax( $posted_data[$field_matches['taxamount']] );
 
     // create a transaction
-    $transactionRequestType = new AnetAPI\TransactionRequestType();
-    $transactionRequestType->setTransactionType( $transaction_type );
-    $transactionRequestType->setAmount( $posted_data[$field_matches['amount']] );
-    $transactionRequestType->setPayment( $paymentOne );
+    $transactionRequest = new AnetAPI\TransactionRequestType();
+    $transactionRequest->setTransactionType( $transaction_type );
+    $transactionRequest->setAmount( $posted_data[$field_matches['ordertotal']] );
+    $transactionRequest->setOrder( $order );
+    $transactionRequest->setCustomer( $customerData );
+    $transactionRequest->setBillTo( $customerAddress );
+    $transactionRequest->setShipTo( $shippingAddress );
+    $transactionRequest->setPayment( $paymentType );
 
     // send transaction
     $request = new AnetAPI\CreateTransactionRequest();
     $request->setMerchantAuthentication( $merchantAuthentication );
-    $request->setTransactionRequest( $transactionRequestType );
+    $request->setTransactionRequest( $transactionRequest );
     $controller = new AnetController\CreateTransactionController( $request );
     if ( 'sandbox' == $options['cf7_authorize_environment'] ) {
         $response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::SANDBOX);
