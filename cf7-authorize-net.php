@@ -3,7 +3,7 @@
  * Plugin Name: Contact Form 7 to Authorize.net
  * Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
  * Description: Handles payment from Contact Form 7 forms through Authorize.net
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: AndrewRMinion Design
  * Author URI: https://andrewrminion.com
  * GitHub Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
@@ -242,12 +242,13 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'label'     => 'Authorization Type',
             'docs_url'  => 'http://andrewrminion.com/2017/02/contact-form-7-to-authorize-net/',
             'field'     => sprintf(
-                '<label><input id="capture" name="cf7-authorize[authorization-type]" value="capture" %1$s type="radio" /> Authorize and Capture</label>
-                <label><input id="authorize" name="cf7-authorize[authorization-type]" value="authorize" %2$s type="radio" /> Authorize Only</label>
+                '<label><input id="capture" name="cf7-authorize[authorization-type]" value="capture" %1$s type="radio" %4$s /> Authorize and Capture</label>
+                <label><input id="authorize" name="cf7-authorize[authorization-type]" value="authorize" %2$s type="radio" %4$s /> Authorize Only</label>
                 <p class="desc"><label for="cf7-authorize[authorization-type]">%3$s</ignore></p>',
                 checked( $authorization_type, 'capture', false ),
                 checked( $authorization_type, 'authorize', false ),
-                'Type of transaction'
+                'Type of transaction',
+                $ignore_form ? 'disabled' : ''
             ),
         ),
     );
