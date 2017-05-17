@@ -3,7 +3,7 @@
  * Plugin Name: Contact Form 7 to Authorize.net
  * Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
  * Description: Handles payment from Contact Form 7 forms through Authorize.net
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: AndrewRMinion Design
  * Author URI: https://andrewrminion.com
  * GitHub Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
@@ -21,8 +21,8 @@ use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
 
 /* register scripts */
-add_action( 'admin_enqueue_scripts', 'cf7_robly_scripts' );
-function cf7_robly_scripts() {
+add_action( 'admin_enqueue_scripts', 'cf7_authorize_net_scripts' );
+function cf7_authorize_net_scripts() {
     wp_register_script( 'chosen', plugins_url( 'js/chosen.jquery.min.js', __FILE__ ), array( 'jquery' ) );
     wp_register_style( 'chosen', plugins_url( 'css/chosen.min.css', __FILE__ ) );
 
