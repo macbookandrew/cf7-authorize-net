@@ -4,7 +4,7 @@
 **Donate link:** https://cash.me/$AndrewRMinionDesign  
 **Requires at least:** 4.3  
 **Tested up to:** 4.7.2  
-**Stable tag:** 1.1.2  
+**Stable tag:** 1.1.3  
 **License:** GPL2  
 
 Adds Authorize.net support to Contact Form 7 forms
@@ -34,6 +34,9 @@ A couple of fields have default values if you don’t explicitly set them (tip: 
 1. Edit a form and go to the “Authorize.net” tab to set the payment settings
 
 ## Changelog ##
+
+### 1.1.3 ###
+ - Stop processing if field is set to be ignored
 
 ### 1.1.2 ###
  - Fix function name conflict
