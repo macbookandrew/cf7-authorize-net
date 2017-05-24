@@ -20,9 +20,9 @@
             placeholder_text_multiple: 'Select some options or leave blank to ignore'
         });
 
-        // add message to Robly tab if main content is changed
+        // add message to Authorize.net tab if main content is changed
         $('#wpcf7-form').on('change', function(){
-            $('.cf7-authorize-message').html('It looks like you&rsquo;ve changed the form content; please save the form before changing any Robly settings.');
+            $('.cf7-authorize-message').html('It looks like you&rsquo;ve changed the form content; please save the form before changing any Authorize.net settings.');
             $('select[name*="cf7-authorize"]').attr('disabled', true);
             $('.cf7-authorize-table').hide();
         });
