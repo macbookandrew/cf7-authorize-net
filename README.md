@@ -4,7 +4,7 @@
 **Donate link:** https://cash.me/$AndrewRMinionDesign  
 **Requires at least:** 4.3  
 **Tested up to:** 4.7.2  
-**Stable tag:** 1.1.3  
+**Stable tag:** 1.2.0  
 **License:** GPL2  
 
 Adds Authorize.net support to Contact Form 7 forms
@@ -31,9 +31,30 @@ A couple of fields have default values if you don’t explicitly set them (tip: 
 ## Installation ##
 1. Install the plugin
 1. Go to Settings > CF7→Authorize.net to set your API keys
+1. Add credit card fields to your form (see below for a sample set)
 1. Edit a form and go to the “Authorize.net” tab to set the payment settings
 
+
+	<fieldset>
+	<legend>Credit Card Information</legend>
+	
+	<p><label class="required" for="credit-card">Credit Card</label>
+	[text* credit-card placeholder "xxxx xxxx xxxx xxxx"]</p>
+	
+	<p><label class="required" for="cvv">Verification Code</label>
+	[number* cvv min:000 max:9999 placeholder "123"]</p>
+	
+	<p><label class="required" for="expiration-date">Expiration Date</label>
+	[text* expiration-date placeholder "01/2018"]</p>
+	
+	</fieldset>
+
+
 ## Changelog ##
+
+### 1.2.0 ###
+ - Add frontend formatting for card number and expiration date fields
+ - Add support for a combined expiration month/year field
 
 ### 1.1.3 ###
  - Stop processing if field is set to be ignored
