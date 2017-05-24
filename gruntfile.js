@@ -18,7 +18,8 @@ module.exports = function (grunt) {
         custom: {
             files: {
                 'js/cf7-authorize-backend.min.js': 'js/cf7-authorize-backend.js',
-                'js/chosen.jquery.min.js': 'js/chosen.jquery.js'
+                'js/chosen.jquery.min.js': 'js/chosen.jquery.js',
+                'js/format-card-number.min.js': 'js/format-card-number.js'
             },
         },
     },

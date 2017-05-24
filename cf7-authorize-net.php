@@ -21,13 +21,18 @@ use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
 
 /* register scripts */
-add_action( 'admin_enqueue_scripts', 'cf7_authorize_net_scripts' );
-function cf7_authorize_net_scripts() {
+add_action( 'admin_enqueue_scripts', 'cf7_authorize_net_scripts_backend' );
+function cf7_authorize_net_scripts_backend() {
     wp_register_script( 'chosen', plugins_url( 'js/chosen.jquery.min.js', __FILE__ ), array( 'jquery' ) );
     wp_register_style( 'chosen', plugins_url( 'css/chosen.min.css', __FILE__ ) );
 
     wp_register_script( 'cf7-authorize-backend', plugins_url( 'js/cf7-authorize-backend.min.js', __FILE__ ), array( 'jquery', 'chosen' ) );
     wp_register_style( 'cf7-authorize', plugins_url( 'css/cf7-authorize.min.css', __FILE__ ), array( 'chosen' ) );
+}
+
+add_action( 'wp_enqueue_scripts', 'cf7_authorize_net_scripts' );
+function cf7_authorize_net_scripts() {
+    wp_enqueue_script( 'cf7-authorize-format', plugins_url( 'js/format-card-number.min.js', __FILE__ ), array( 'jquery' ), NULL, true );
 }
 
 /* add settings page */
