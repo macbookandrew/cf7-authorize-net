@@ -403,17 +403,18 @@ function cf7_authorize_submit_to_authorize( $form ) {
     }
     $settings = cf7_authorize_get_form_settings( $posted_data['_wpcf7'], NULL, true );
 
-    // check if we should process this form
-    if ( $settings['ignore-form'] !== '1' ) {
-        // get array keys for form data
-        if ( $settings['fields'] ) {
-            $field_matches = array();
-            foreach( $settings['fields'] as $id => $field ) {
-                foreach ( $field as $this_field ) {
-                    $field_matches[$this_field] = $id;
-                }
+    // get array keys for form data
+    if ( $settings['fields'] ) {
+        $field_matches = array();
+        foreach( $settings['fields'] as $id => $field ) {
+            foreach ( $field as $this_field ) {
+                $field_matches[$this_field] = $id;
             }
         }
+    }
+
+    // check if we should process this form and if matching fields are set
+    if ( $settings['ignore-form'] !== '1' && $field_matches ) {
         $form_title = get_the_title($posted_data['_wpcf7']);
 
         // set transaction type
