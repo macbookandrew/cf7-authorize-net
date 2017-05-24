@@ -187,6 +187,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'cardnumber'    => 'Credit Card Number',
             'expmonth'      => 'Expiration Month',
             'expyear'       => 'Expiration Year',
+            'expcombined'   => 'Expiration Date (combined)',
             'cvv'           => 'CVV Code',
         ),
         'Billing Info'  => array(
@@ -429,6 +430,13 @@ function cf7_authorize_submit_to_authorize( $form ) {
             $transaction_type = 'authOnlyTransaction';
         }
 
+        // set expiration date
+        if ($posted_data[$field_matches['expcombined']]) {
+            $expiration_date = str_replace( ' / ', '-', $posted_data[$field_matches['expcombined']] );
+        } else {
+            $expiration_date = $posted_data[$field_matches['expmonth']] . '-' . $posted_data[$field_matches['expyear']];
+        }
+
         // set up API credentials
         $merchantAuthentication = new AnetAPI\MerchantAuthenticationType();
         $merchantAuthentication->setName( $options['cf7_authorize_api_login_id'] );
@@ -438,7 +446,7 @@ function cf7_authorize_submit_to_authorize( $form ) {
         $creditCard = new AnetAPI\CreditCardType();
         $creditCard->setCardNumber( str_replace(' ', '', $posted_data[$field_matches['cardnumber']] ) );
         $creditCard->setCardCode( $posted_data[$field_matches['cvv']] );
-        $creditCard->setExpirationDate( $posted_data[$field_matches['expmonth']] . '-' . $posted_data[$field_matches['expyear']] );
+        $creditCard->setExpirationDate( $expiration_date );
         $paymentType = new AnetAPI\PaymentType();
         $paymentType->setCreditCard( $creditCard );
 
