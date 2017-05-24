@@ -431,7 +431,7 @@ function cf7_authorize_submit_to_authorize( $form ) {
 
         // create the payment data for a credit card
         $creditCard = new AnetAPI\CreditCardType();
-        $creditCard->setCardNumber( $posted_data[$field_matches['cardnumber']] );
+        $creditCard->setCardNumber( str_replace(' ', '', $posted_data[$field_matches['cardnumber']] ) );
         $creditCard->setCardCode( $posted_data[$field_matches['cvv']] );
         $creditCard->setExpirationDate( $posted_data[$field_matches['expmonth']] . '-' . $posted_data[$field_matches['expyear']] );
         $paymentType = new AnetAPI\PaymentType();
