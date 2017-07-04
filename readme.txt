@@ -4,7 +4,7 @@ Tags: contact form, contact form 7, cf7, contactform7, forms, form, payment, pro
 Donate link: https://cash.me/$AndrewRMinionDesign
 Requires at least: 4.3
 Tested up to: 4.7.2
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPL2
 
 Adds Authorize.net support to Contact Form 7 forms
@@ -51,6 +51,9 @@ A couple of fields have default values if you don’t explicitly set them (tip: 
 `
 
 == Changelog ==
+
+= 1.3.3 =
+ - Add support for recurring/subscription billing (ARB)
 
 = 1.2.0 =
  - Add frontend formatting for card number and expiration date fields
