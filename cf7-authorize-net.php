@@ -600,43 +600,69 @@ function cf7_authorize_submit_to_authorize( $form ) {
             $api_response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::PRODUCTION);
         }
 
-        // handle the response
-        if ( $response != NULL ) {
-            $tresponse = $response->getTransactionResponse();
-        }
-
-        add_filter( 'wpcf7_form_response_output', function( $output, $class, $content ) use ( $tresponse ) {
-            return cf7_authorize_response( $output, $class, $content, $tresponse );
-        }, 10, 3 );
-
-        add_filter( 'wpcf7_ajax_json_echo', function( $items, $result ) use ( $tresponse ) {
-            return cf7_authorize_response_json( $items, $result, $tresponse );
-        }, 10, 2 );
+        // notify user
+        cf7_authorize_net_parse_response( $api_response, $settings['authorization-type'], $one_time_transaction_types );
     }
 }
 
 /**
+ * Handle transaction and subscription responsens
+ * @param  array    $api_response               response from Authorize.net API
+ * @param  string   $authorization_type         type of authorization
+ * @param  array    $one_time_transaction_types array of one-time transaction types
+ */
+function cf7_authorize_net_parse_response( $api_response, $authorization_type, $one_time_transaction_types ) {
+    if ( in_array( $authorization_type, $one_time_transaction_types ) ) {
+        $transaction_response = $api_response->getTransactionResponse();
+        if ( $transaction_response->getResponseCode() == '1' ) {
+            $modified_items['message'] = '<br/>Approval code: ' . $transaction_response->getAuthCode() . '<br/>Transaction ID: ' . $transaction_response->getTransId();
+        } elseif ( $transaction_response->getResponseCode() == '2' ) {
+            $modified_items['message'] = 'Error: Declined. Please contact us or your card issuer for more information.<br/>';
+            foreach ( $transaction_response->getErrors() as $error ) {
+                $items['message'] .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
+            }
+            $modified_items['mailSent'] = false;
+        } elseif ( $transaction_response->getResponseCode() == '3' ) {
+            $modified_items['message'] = 'Error. Please contact us or your card issuer for more information.<br/>';
+            foreach ( $transaction_response->getErrors() as $error ) {
+                $items['message'] .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
+            }
+            $modified_items['mailSent'] = false;
+        }
+    } else {
+        if ( ( $api_response != NULL ) && ( $api_response->getMessages()->getResultCode() == "Ok" ) ) {
+            $modified_items['message'] = '<br/>Success: created subscription ID ' . $api_response->getSubscriptionId() . "\n";
+        } else {
+            $modified_items['message'] = 'Error: ';
+            foreach ( $api_response->getMessages()->getMessage() as $message ) {
+                $modified_items['message'] .= $message->getCode() . ' ' . $message->getText() . '<br/>';
+            }
+            $modified_items['mailSent'] = false;
+        }
+    }
+
+    add_filter( 'wpcf7_form_response_output', function( $output, $class, $content ) use ( $modified_items ) {
+        return cf7_authorize_response( $output, $class, $content, $modified_items );
+    }, 10, 3 );
+
+    add_filter( 'wpcf7_ajax_json_echo', function( $items, $result ) use ( $modified_items ) {
+        return cf7_authorize_response_json( $items, $result, $modified_items );
+    }, 10, 2 );
+}
+
+/**
  * Add custom content to WPCF7 output response
- * @param  string $output  HTML string of output
- * @param  string $class   string with HTML classes for the wrapper
- * @param  string $content string with response from WPCF7 plugin
+ * @param  string $output         HTML string of output
+ * @param  string $class          string with HTML classes for the wrapper
+ * @param  string $content        string with response from WPCF7 plugin
+ * @param  array  $modified_items modified responses
  * @return string HTML string of output
  */
-function cf7_authorize_response( $output, $class, $content, $tresponse ) {
-    if ( $tresponse->getResponseCode() == '1' ) {
-        $output .= str_replace( '</div>', '<br/>Approval code: ' . $tresponse->getAuthCode() . '<br/>Transaction ID: ' . $tresponse->getTransId() . '</div>', $output );
-    } elseif ( $tresponse->getResponseCode() == '2' ) {
-        $output = '<div class="wpcf7-response-output wpcf7-validation-errors">Error: Declined. Please contact us or your card issuer for more information.<br/>';
-        foreach ( $tresponse->getErrors() as $error ) {
-            $output .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
-        }
-        $output .= '</div>';
-    } elseif ( $tresponse->getResponseCode() == '3' ) {
-        $output = '<div class="wpcf7-response-output wpcf7-validation-errors">Error. Please contact us or your card issuer for more information.<br/>';
-        foreach ( $tresponse->getErrors() as $error ) {
-            $output .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
-        }
-        $output .= '</div>';
+function cf7_authorize_response( $output, $class, $content, $modified_items ) {
+    if ( $modified_items['mailSent'] !== false ) {
+        $output .= str_replace( '</div>', '<br/>' . $modified_items['message'] . '</div>', $output );
+    } else {
+        $output = '<div class="wpcf7-response-output wpcf7-validation-errors">' . $modified_items['message'] . '</div>';
     }
 
     return $output;
@@ -644,25 +670,18 @@ function cf7_authorize_response( $output, $class, $content, $tresponse ) {
 
 /**
  * Add custom content to WPCF7 output JSON response
- * @param  array  $items  array of response info
- * @param  array  $result array of results
+ * @param  array $items          array of response info
+ * @param  array $result         array of results
+ * @param  array $modified_items modified responses
  * @return array array of responses to show
  */
-function cf7_authorize_response_json( $items, $result, $tresponse ) {
-    if ( $tresponse->getResponseCode() == '1' ) {
-        $items['message'] .= '<br/>Approval code: ' . $tresponse->getAuthCode() . '<br/>Transaction ID: ' . $tresponse->getTransId();
-    } elseif ( $tresponse->getResponseCode() == '2' ) {
-        $items['message'] = 'Error: Declined. Please contact us or your card issuer for more information.<br/>';
-        foreach ( $tresponse->getErrors() as $error ) {
-            $items['message'] .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
-        }
-        $items['mailSent'] = false;
-    } elseif ( $tresponse->getResponseCode() == '3' ) {
-        $items['message'] = 'Error. Please contact us or your card issuer for more information.<br/>';
-        foreach ( $tresponse->getErrors() as $error ) {
-            $items['message'] .= 'Error code ' . $error->getErrorCode() . ': ' . $error->getErrorText();
-        }
-        $items['mailSent'] = false;
+function cf7_authorize_response_json( $items, $result, $modified_items ) {
+    if ( $modified_items['mailSent'] !== false ) {
+        $items['message'] .= $modified_items['message'];
+    } else {
+        $items['message'] = $modified_items['message'];
+        $items['mailSent'] = $modified_items['mailSent'];
+        $items['status'] = 'validation_failed';
     }
 
     return $items;
