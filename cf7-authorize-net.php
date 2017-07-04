@@ -413,6 +413,7 @@ function cf7_authorize_get_form_settings( $form_id, $field = null, $fresh = fals
 add_action( 'wpcf7_before_send_mail', 'cf7_authorize_submit_to_authorize', 10, 1 );
 function cf7_authorize_submit_to_authorize( $form ) {
     global $wpdb;
+    $one_time_transaction_types = array( 'capture', 'authorize' );
 
     // get API keys
     $options = get_option( 'cf7_authorize_settings' );
@@ -444,7 +445,7 @@ function cf7_authorize_submit_to_authorize( $form ) {
         } elseif ( 'authorize' == $settings['authorization-type'] ) {
             $transaction_type = 'authOnlyTransaction';
         } elseif ( 'subscription' == $settings['authorization-type'] ) {
-            $transaction_type = 'authOnlyTransaction';
+            $transaction_type = 'subscription';
         }
 
         // set expiration date
@@ -502,25 +503,101 @@ function cf7_authorize_submit_to_authorize( $form ) {
         $paymentDetails->setShippingHandling( $posted_data[$field_matches['shipping']] );
         $paymentDetails->setTax( $posted_data[$field_matches['taxamount']] );
 
-        // create a transaction
-        $transactionRequest = new AnetAPI\TransactionRequestType();
-        $transactionRequest->setTransactionType( $transaction_type );
-        $transactionRequest->setAmount( $posted_data[$field_matches['ordertotal']] );
-        $transactionRequest->setOrder( $order );
-        $transactionRequest->setCustomer( $customerData );
-        $transactionRequest->setBillTo( $customerAddress );
-        $transactionRequest->setShipTo( $shippingAddress );
-        $transactionRequest->setPayment( $paymentType );
+        // set order total amount
+        $ordertotal = isset( $posted_data[$field_matches['ordertotal_
+        ']] ) ? $posted_data[$field_matches['ordertotal_other']] : $posted_data[$field_matches['ordertotal']];
 
-        // send transaction
-        $request = new AnetAPI\CreateTransactionRequest();
-        $request->setMerchantAuthentication( $merchantAuthentication );
-        $request->setTransactionRequest( $transactionRequest );
-        $controller = new AnetController\CreateTransactionController( $request );
+        if ( in_array( $settings['authorization-type'], $one_time_transaction_types ) ) {
+            // create a transaction
+            $transactionRequest = new AnetAPI\TransactionRequestType();
+            $transactionRequest->setTransactionType( $transaction_type );
+            $transactionRequest->setAmount( $ordertotal );
+            $transactionRequest->setOrder( $order );
+            $transactionRequest->setCustomer( $customerData );
+            $transactionRequest->setBillTo( $customerAddress );
+            $transactionRequest->setShipTo( $shippingAddress );
+            $transactionRequest->setPayment( $paymentType );
+
+            // set up transaction request
+            $request = new AnetAPI\CreateTransactionRequest();
+            $request->setMerchantAuthentication( $merchantAuthentication );
+            $request->setTransactionRequest( $transactionRequest );
+            $controller = new AnetController\CreateTransactionController( $request );
+
+            // set up request to send
+            $request = new AnetAPI\CreateTransactionRequest();
+            $request->setMerchantAuthentication( $merchantAuthentication );
+            $request->setTransactionRequest( $transactionRequest );
+            $controller = new AnetController\CreateTransactionController( $request );
+        } elseif ( 'subscription' == $settings['authorization-type'] ) {
+            // create a subscription
+            $subscription = new AnetAPI\ARBSubscriptionType();
+            $subscription->setName( ( array_key_exists( 'description', $field_matches ) ? $posted_data[$field_matches['description']] : $form_title ) );
+
+            // set subscription data variables
+            $interval_length = $posted_data[$field_matches['interval_length']];
+            $interval_unit = $posted_data[$field_matches['interval_unit']];
+            $start_date = $posted_data[$field_matches['start_date']];
+            $total_occurrences = $posted_data[$field_matches['total_occurrences']];
+            $trial_occurrences = $posted_data[$field_matches['trial_occurrences']];
+            $trial_amount = $posted_data[$field_matches['trial_amount']];
+
+            // validate data and set defaults
+            if ( ! in_array( $interval_unit, array( 'days', 'months' ) ) ) {
+                $interval_unit = 'days';
+            }
+            if ( $interval_unit == 'months' && ( $interval_length < 1 || $interval_length > 12 ) ) {
+                $interval_length = 12;
+            } elseif ( $interval_unit == 'days' && ( $interval_length < 7 || $interval_length > 365 ) ) {
+                $interval_length = '365';
+            }
+            if ( date( 'U', $start_date ) < time() ) {
+                $start_date = date( 'Y-m-d' );
+            }
+            if ( ! is_int( $total_occurrences ) || $total_occurrences > 9999 ) {
+                $total_occurrences = 1;
+            }
+            if ( ! is_int( $trial_occurrences ) || $trial_occurrences > 99 ) {
+                $trial_occurrences = 0;
+            }
+            if ( ! is_int( $trial_amount ) ) {
+                $trial_amount = 0;
+            }
+
+            $interval = new AnetAPI\PaymentScheduleType\IntervalAType();
+            $interval->setLength( $interval_length );
+            $interval->setUnit( $interval_unit );
+
+            $paymentSchedule = new AnetAPI\PaymentScheduleType();
+            $paymentSchedule->setInterval($interval);
+            $paymentSchedule->setStartDate(new DateTime( $start_date ));
+            $paymentSchedule->setTotalOccurrences( $total_occurrences );
+            $paymentSchedule->setTrialOccurrences( $trial_occurrences );
+
+            $subscription->setPaymentSchedule( $paymentSchedule );
+            $subscription->setAmount( $posted_data[$field_matches['ordertotal']] );
+            $subscription->setTrialAmount( $trial_amount );
+
+
+            // set customer and card info
+            $customerAddress = new AnetAPI\NameAndAddressType();
+            $customerAddress->setFirstName( $posted_data[$field_matches['billing_fname']] );
+            $customerAddress->setLastName( $posted_data[$field_matches['billing_lname']] );
+            $subscription->setBillTo( $customerAddress );
+            $subscription->setPayment( $paymentType );
+
+            // set up request to send
+            $request = new AnetAPI\ARBCreateSubscriptionRequest();
+            $request->setMerchantAuthentication( $merchantAuthentication );
+            $request->setSubscription( $subscription );
+            $controller = new AnetController\ARBCreateSubscriptionController( $request );
+        }
+
+        // send request
         if ( 'sandbox' == $options['cf7_authorize_environment'] ) {
-            $response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::SANDBOX);
+            $api_response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::SANDBOX);
         } else {
-            $response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::PRODUCTION);
+            $api_response = $controller->executeWithApiResponse( \net\authorize\api\constants\ANetEnvironment::PRODUCTION);
         }
 
         // handle the response
