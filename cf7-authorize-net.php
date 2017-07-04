@@ -223,7 +223,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
         ),
         'Subscription Info'    => array(
             'description'       => 'Subscription Description',
-            'interval_length'   => 'Subscription Length (1–12 months or 7–365 days)',
+            'interval_length'   => 'Interval Length (1–12 months or 7–365 days)',
             'interval_unit'     => 'Interval Unit (must be either “days” or “months”)',
             'start_date'        => 'Subscription Start Date (valid PHP datetime format)',
             'total_occurrences' => 'Total Occurrences (1–9,999)',
