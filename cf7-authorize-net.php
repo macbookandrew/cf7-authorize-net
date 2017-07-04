@@ -547,9 +547,9 @@ function cf7_authorize_submit_to_authorize( $form ) {
                 $interval_unit = 'days';
             }
             if ( $interval_unit == 'months' && ( $interval_length < 1 || $interval_length > 12 ) ) {
-                $interval_length = 12;
+                $interval_length = 1;
             } elseif ( $interval_unit == 'days' && ( $interval_length < 7 || $interval_length > 365 ) ) {
-                $interval_length = '365';
+                $interval_length = '7';
             }
             if ( date( 'U', $start_date ) < time() ) {
                 $start_date = date( 'Y-m-d' );
