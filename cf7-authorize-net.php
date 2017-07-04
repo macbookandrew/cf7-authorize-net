@@ -220,6 +220,16 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'taxamount'         => 'Tax Amount',
             'ordertotal'        => 'Total Purchase Amount',
         ),
+        'Subscription Info'    => array(
+            'description'       => 'Subscription Description',
+            'interval_length'   => 'Subscription Length',
+            'interval_unit'     => 'Interval Unit',
+            'start_date'        => 'Subscription Start Date',
+            'total_occurrences' => 'Total Occurrences',
+            'trial_occurrences' => 'Trial Occurrences',
+            'trial_amount'      => 'Trial Amount',
+            'invoicenum'        => 'Invoice Number',
+        ),
     );
 
     // HTML string of Authorize.net fields
@@ -250,9 +260,11 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'field'     => sprintf(
                 '<label><input id="capture" name="cf7-authorize[authorization-type]" value="capture" %1$s type="radio" %4$s /> Authorize and Capture</label>
                 <label><input id="authorize" name="cf7-authorize[authorization-type]" value="authorize" %2$s type="radio" %4$s /> Authorize Only</label>
-                <p class="desc"><label for="cf7-authorize[authorization-type]">%3$s</ignore></p>',
+                <label><input id="subscription" name="cf7-authorize[authorization-type]" value="subscription" %3$s type="radio" %4$s />Subscription</label>
+                <p class="desc"><label for="cf7-authorize[authorization-type]">%4$s</ignore></p>',
                 checked( $authorization_type, 'capture', false ),
                 checked( $authorization_type, 'authorize', false ),
+                checked( $authorization_type, 'subscription', false ),
                 'Type of transaction',
                 $ignore_form ? 'disabled' : ''
             ),
@@ -427,6 +439,8 @@ function cf7_authorize_submit_to_authorize( $form ) {
         if ( 'capture' == $settings['authorization-type'] ) {
             $transaction_type = 'authCaptureTransaction';
         } elseif ( 'authorize' == $settings['authorization-type'] ) {
+            $transaction_type = 'authOnlyTransaction';
+        } elseif ( 'subscription' == $settings['authorization-type'] ) {
             $transaction_type = 'authOnlyTransaction';
         }
 
