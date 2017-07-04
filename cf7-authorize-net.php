@@ -471,6 +471,7 @@ function cf7_authorize_submit_to_authorize( $form ) {
         // add billing info
         $customerAddress = new AnetAPI\CustomerAddressType();
         $customerData = new AnetAPI\CustomerDataType();
+        $customer = new AnetAPI\CustomerType();
         $customerAddress->setFirstName( $posted_data[$field_matches['billing_fname']] );
         $customerAddress->setLastName( $posted_data[$field_matches['billing_lname']] );
         $customerAddress->setCompany( $posted_data[$field_matches['billing_company']] );
@@ -479,10 +480,12 @@ function cf7_authorize_submit_to_authorize( $form ) {
         $customerAddress->setState( $posted_data[$field_matches['billing_state']] );
         $customerAddress->setZip( $posted_data[$field_matches['billing_postalcode']] );
         $customerAddress->setCountry( ( array_key_exists( 'billing_country', $field_matches ) ? $posted_data[$field_matches['country']] : 'US' ) );
-        $customerAddress->setEmail( $posted_data[$field_matches['billing_email']] );
         $customerData->setEmail( $posted_data[$field_matches['billing_email']] );
+        $customer->setEmail( $posted_data[$field_matches['billing_email']] );
         $customerAddress->setPhoneNumber( $posted_data[$field_matches['billing_phone']] );
+        $customer->setPhoneNumber( $posted_data[$field_matches['billing_phone']] );
         $customerAddress->setFaxNumber( $posted_data[$field_matches['billing_fax']] );
+        $customer->setFaxNumber( $posted_data[$field_matches['billing_fax']] );
 
         // add shipping info
         $shippingAddress = new AnetAPI\NameAndAddressType();
@@ -578,12 +581,10 @@ function cf7_authorize_submit_to_authorize( $form ) {
             $subscription->setAmount( $posted_data[$field_matches['ordertotal']] );
             $subscription->setTrialAmount( $trial_amount );
 
-
             // set customer and card info
-            $customerAddress = new AnetAPI\NameAndAddressType();
-            $customerAddress->setFirstName( $posted_data[$field_matches['billing_fname']] );
-            $customerAddress->setLastName( $posted_data[$field_matches['billing_lname']] );
             $subscription->setBillTo( $customerAddress );
+            $subscription->setShipTo( $shippingAddress );
+            $subscription->setCustomer( $customer );
             $subscription->setPayment( $paymentType );
 
             // set up request to send
