@@ -252,7 +252,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'docs_url'  => 'http://andrewrminion.com/2017/02/contact-form-7-to-authorize-net/',
             'field'     => sprintf(
                 '<input id="ignore-form" name="cf7-authorize[ignore-form]" value="1" %s type="checkbox" />
-                <p class="desc"><label for="ignore-form">%s</ignore></p>',
+                <span class="desc"><label for="ignore-form">%s</ignore></span>',
                 checked( $ignore_form, true, false ),
                 'Don&rsquo;t send anything from this form to Authorize.net.'
             ),
@@ -261,14 +261,12 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'label'     => 'Authorization Type',
             'docs_url'  => 'http://andrewrminion.com/2017/02/contact-form-7-to-authorize-net/',
             'field'     => sprintf(
-                '<label><input id="capture" name="cf7-authorize[authorization-type]" value="capture" %1$s type="radio" %4$s /> Authorize and Capture</label>
-                <label><input id="authorize" name="cf7-authorize[authorization-type]" value="authorize" %2$s type="radio" %4$s /> Authorize Only</label>
-                <label><input id="subscription" name="cf7-authorize[authorization-type]" value="subscription" %3$s type="radio" %4$s />Subscription</label>
-                <p class="desc"><label for="cf7-authorize[authorization-type]">%4$s</ignore></p>',
+                '<label><input id="capture" name="cf7-authorize[authorization-type]" value="capture" %1$s type="radio" %4$s /> Authorize and Capture </label>
+                <label><input id="authorize" name="cf7-authorize[authorization-type]" value="authorize" %2$s type="radio" %4$s /> Authorize Only </label>
+                <label><input id="subscription" name="cf7-authorize[authorization-type]" value="subscription" %3$s type="radio" %4$s /> Create a Recurring Subscription </label> ',
                 checked( $authorization_type, 'capture', false ),
                 checked( $authorization_type, 'authorize', false ),
                 checked( $authorization_type, 'subscription', false ),
-                'Type of transaction',
                 $ignore_form ? 'disabled' : ''
             ),
         ),
