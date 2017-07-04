@@ -559,14 +559,8 @@ function cf7_authorize_submit_to_authorize( $form ) {
             if ( date( 'U', $start_date ) < time() ) {
                 $start_date = date( 'Y-m-d' );
             }
-            if ( ! is_int( $total_occurrences ) || $total_occurrences > 9999 ) {
+            if ( ! is_int( (integer) $total_occurrences ) || $total_occurrences < 1 || $total_occurrences > 9999 ) {
                 $total_occurrences = 1;
-            }
-            if ( ! is_int( $trial_occurrences ) || $trial_occurrences > 99 ) {
-                $trial_occurrences = 0;
-            }
-            if ( ! is_int( $trial_amount ) ) {
-                $trial_amount = 0;
             }
 
             $interval = new AnetAPI\PaymentScheduleType\IntervalAType();
