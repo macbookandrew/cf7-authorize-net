@@ -507,8 +507,10 @@ function cf7_authorize_submit_to_authorize( $form ) {
         $paymentDetails->setTax( $posted_data[$field_matches['taxamount']] );
 
         // set order total amount
-        $ordertotal = isset( $posted_data[$field_matches['ordertotal_
-        ']] ) ? $posted_data[$field_matches['ordertotal_other']] : $posted_data[$field_matches['ordertotal']];
+        $ordertotal = $posted_data[$field_matches['ordertotal_other']] ? $posted_data[$field_matches['ordertotal_other']] : $posted_data[$field_matches['ordertotal']];
+        if ( ! is_float( $ordertotal ) && is_int( $ordertotal ) ) {
+            $ordertotal .= '.00';
+        }
 
         if ( in_array( $settings['authorization-type'], $one_time_transaction_types ) ) {
             // create a transaction
@@ -578,7 +580,7 @@ function cf7_authorize_submit_to_authorize( $form ) {
             $paymentSchedule->setTrialOccurrences( $trial_occurrences );
 
             $subscription->setPaymentSchedule( $paymentSchedule );
-            $subscription->setAmount( $posted_data[$field_matches['ordertotal']] );
+            $subscription->setAmount( $ordertotal );
             $subscription->setTrialAmount( $trial_amount );
 
             // set customer and card info
