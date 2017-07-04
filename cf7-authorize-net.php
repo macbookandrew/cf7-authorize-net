@@ -218,8 +218,8 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'invoicenum'        => 'Invoice Number',
             'shipping'          => 'Shipping Amount',
             'taxamount'         => 'Tax Amount',
-            'ordertotal'        => 'Total Purchase Amount',
-            'ordertotal_other'  => 'Total Purchase Amount (custom amount; overrides main total amount field)',
+            'ordertotal'        => 'Total Purchase/Subscription Amount',
+            'ordertotal_other'  => 'Total Purchase/Subscription Amount (custom amount; overrides main total amount field)',
         ),
         'Subscription Info'    => array(
             'description'       => 'Subscription Description',
@@ -230,8 +230,6 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
             'trial_occurrences' => 'Trial Occurrences (1–99)',
             'trial_amount'      => 'Trial Amount',
             'invoicenum'        => 'Invoice Number',
-            'ordertotal'        => 'Total Subscription Amount',
-            'ordertotal_other'  => 'Total Subscription Amount (custom amount; overrides main total subscription amount field)',
         ),
     );
 
