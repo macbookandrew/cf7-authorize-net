@@ -14,19 +14,22 @@ Adds Authorize.net support to Contact Form 7 forms, adding the capability to mat
 
 === Notes ===
 Some fields are required by Authorize.net for the payment to go through:
-    - Credit Card Number
-    - Expiration Month
-    - Expiration Year
-    - CVV Code
-    - Total Amount
+
+- Credit Card Number
+- Expiration Month
+- Expiration Year
+- CVV Code
+- Total Amount
 
 Other fields may be required based on your Authorize.net settings:
-    - Zip code
-    - Billing address
+
+- Zip code
+- Billing address
 
 A couple of fields have default values if you don’t explicitly set them (tip: use hidden fields if you don’t need them publicly available):
-    - Order Description will default to the name of the contact form
-    - Country will default to US
+
+- Order Description will default to the name of the contact form
+- Country will default to US
 
 == Installation ==
 1. Install the plugin
