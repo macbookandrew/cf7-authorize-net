@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Plugin Name: Contact Form 7 to Authorize.net
  * Plugin URI: https://github.com/macbookandrew/cf7-authorize-net/
  * Description: Handles payment from Contact Form 7 forms through Authorize.net
@@ -20,8 +20,12 @@ require_once 'vendor/authorizenet/authorizenet/autoload.php';
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
 
-/* register scripts */
-add_action( 'admin_enqueue_scripts', 'cf7_authorize_net_scripts_backend' );
+/**
+ * Register scripts.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_net_scripts_backend() {
 	wp_register_script( 'chosen', plugins_url( 'js/chosen.jquery.min.js', __FILE__ ), array( 'jquery' ) );
 	wp_register_style( 'chosen', plugins_url( 'css/chosen.min.css', __FILE__ ) );
@@ -29,26 +33,45 @@ function cf7_authorize_net_scripts_backend() {
 	wp_register_script( 'cf7-authorize-backend', plugins_url( 'js/cf7-authorize-backend.min.js', __FILE__ ), array( 'jquery', 'chosen' ) );
 	wp_register_style( 'cf7-authorize', plugins_url( 'css/cf7-authorize.min.css', __FILE__ ), array( 'chosen' ) );
 }
+add_action( 'admin_enqueue_scripts', 'cf7_authorize_net_scripts_backend' );
 
-add_action( 'wp_enqueue_scripts', 'cf7_authorize_net_scripts' );
+/**
+ * Enqueue scripts.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_net_scripts() {
-	wp_enqueue_script( 'cf7-authorize-format', plugins_url( 'js/format-card-number.min.js', __FILE__ ), array( 'jquery' ), NULL, true );
+	wp_enqueue_script( 'cf7-authorize-format', plugins_url( 'js/format-card-number.min.js', __FILE__ ), array( 'jquery' ), null, true );
 }
+add_action( 'wp_enqueue_scripts', 'cf7_authorize_net_scripts' );
 
-/* add settings page */
+/**
+ * Add settings page.
+ */
 add_action( 'admin_menu', 'cf7_authorize_add_admin_menu' );
 add_action( 'admin_init', 'cf7_authorize_settings_init' );
 
-// add to menu
+/**
+ * Register menu item.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_add_admin_menu() {
 	add_options_page( 'Contact Form 7 to Authorize.net', 'CF7&rarr;Authorize.net', 'manage_options', 'cf7_authorize_net', 'cf7_authorize_options_page' );
 }
 
-// add settings section and fields
+/**
+ * Display settings.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_settings_init() {
 	register_setting( 'cf7_authorize_options', 'cf7_authorize_settings' );
 
-	// API settings
+	// API settings.
 	add_settings_section(
 		'cf7_authorize_options_keys_section',
 		__( 'Add your API Keys', 'cf7_authorize' ),
@@ -81,21 +104,36 @@ function cf7_authorize_settings_init() {
 	);
 }
 
-// print API ID field
+/**
+ * Print API field.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_api_login_id_render() {
 	$options = get_option( 'cf7_authorize_settings' ); ?>
 	<input type="text" name="cf7_authorize_settings[cf7_authorize_api_login_id]" placeholder="5NaF7aL34G" size="20" value="<?php echo ( ( is_array( $options ) && array_key_exists( 'cf7_authorize_api_login_id', $options ) ) ? $options['cf7_authorize_api_login_id'] : NULL ); ?>">
 	<?php
 }
 
-// print API Key field
+/**
+ * Print API key field.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_api_transaction_key_render() {
 	$options = get_option( 'cf7_authorize_settings' ); ?>
 	<input type="text" name="cf7_authorize_settings[cf7_authorize_api_transaction_key]" placeholder="2z1aGdL1534fbG2c" size="20" value="<?php echo ( ( is_array( $options ) && array_key_exists( 'cf7_authorize_api_transaction_key', $options ) ) ? $options['cf7_authorize_api_transaction_key'] : NULL ); ?>">
 	<?php
 }
 
-// print environment field
+/**
+ * Print environment field.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_environment_render() {
 	$environment = get_option( 'cf7_authorize_settings' )['cf7_authorize_environment'];
 	if ( ! isset( $environment ) ) {
@@ -107,12 +145,22 @@ function cf7_authorize_environment_render() {
 	<?php
 }
 
-// print API settings description
+/**
+ * Print API settings description.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_api_settings_section_callback() {
 	echo __( 'Enter your API Login ID and API Transaction Key below. <a href="https://support.authorize.net/authkb/index?page=content&id=A682" target="_blank">Instructions to locate them</a>.', 'cf7_authorize' );
 }
 
-// print form
+/**
+ * Print API settings description.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_options_page() { ?>
 	<div class="wrap">
 	   <h2>Contact Form 7 to Authorize.net</h2>
@@ -129,32 +177,42 @@ function cf7_authorize_options_page() { ?>
 	<?php
 }
 
-// add WPCF7 metabox
-add_action( 'wpcf7_add_meta_boxes', 'cf7_authorize_wpcf7_add_meta_boxes' );
+/**
+ * Add WPCF7 metabox.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_wpcf7_add_meta_boxes() {
 	add_meta_box(
 		'cf7s-subject',
 		'Authorize.net Settings',
 		'cf7_authorize_wpcf7_metabox',
-		NULL,
+		null,
 		'form',
 		'low'
 	);
 }
+add_action( 'wpcf7_add_meta_boxes', 'cf7_authorize_wpcf7_add_meta_boxes' );
 
-// print WPCF7 metabox
+/**
+ * Print WPCF7 metabox.
+ *
+ * @return void
+ * @since 1.0.0
+ */
 function cf7_authorize_wpcf7_metabox( $cf7 ) {
 	$post_id = $cf7->id();
 	$settings = cf7_authorize_get_form_settings( $post_id );
 
-	// prevent undefined index issues
+	// prevent undefined index issues.
 	$all_submissions = isset( $settings['all-submissions'] ) ? $settings['all-submissions'] : NULL;
 	$saved_fields = isset( $settings['fields'] ) ? $settings['fields'] : NULL;
 	$ignore_form = isset( $settings['ignore-form'] ) ? $settings['ignore-form'] : NULL;
 	$authorization_type = isset( $settings['authorization-type'] ) ? $settings['authorization-type'] : 'capture';
 	$cf7_authorize_settings = get_option( 'cf7_authorize_settings' );
 
-	// check for API and transaction keys
+	// check for API and transaction keys.
 	if ( ! is_array( $cf7_authorize_settings ) || ( array_key_exists( 'cf7_authorize_api_login_id', $cf7_authorize_settings ) && ! isset( $cf7_authorize_settings['cf7_authorize_api_login_id'] ) ) || ( array_key_exists( 'cf7_authorize_api_transaction_key', $cf7_authorize_settings ) && ! isset( $cf7_authorize_settings['cf7_authorize_api_transaction_key'] ) ) ) {
 		$message = 'Note: you <strong>must</strong> add your API Login ID and API Transaction Key on the <a href="' . get_admin_url() . '/options-general.php?page=cf7_authorize_net">settings page</a>.';
 	}
@@ -164,7 +222,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 	wp_enqueue_script( 'cf7-authorize-backend' );
 	wp_enqueue_style( 'cf7-authorize' );
 
-	// get all WPCF7 fields
+	// get all WPCF7 fields.
 	$wpcf7_shortcodes = WPCF7_ShortcodeManager::get_instance();
 	$field_types_to_ignore = array( 'recaptcha', 'clear', 'submit' );
 	$form_fields = array();
@@ -174,14 +232,14 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 		}
 	}
 
-	// get saved fields and combine with WPCF7
+	// get saved fields and combine with WPCF7.
 	if ( $saved_fields ) {
 		$all_fields = array_merge( $form_fields, array_keys( $saved_fields ) );
 	} else {
 		$all_fields = $form_fields;
 	}
 
-	// list of supported Authorize.net fields
+	// list of supported Authorize.net fields.
 	$authorize_fields = array(
 		'Card Info'     => array(
 			'cardnumber'    => 'Credit Card Number',
@@ -233,7 +291,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 		),
 	);
 
-	// HTML string of Authorize.net fields
+	// HTML string of Authorize.net fields.
 	$fields_options = '';
 	foreach ( $authorize_fields as $key => $group ) {
 		$fields_options .= '<optgroup label="' . $key . '">';
@@ -243,7 +301,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 		$fields_options .= '</optgroup>';
 	}
 
-	// start setting up Authorize.net settings fields
+	// start setting up Authorize.net settings fields.
 	$fields = array(
 		'ignore-field' => array(
 			'label'     => 'Ignore this Contact Form',
@@ -270,7 +328,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 		),
 	);
 
-	// add all CF7 fields to Authorize.net settings fields
+	// add all CF7 fields to Authorize.net settings fields.
 	foreach ( $all_fields as $this_field ) {
 		$this_authorize_field_list = $settings['fields'][$this_field];
 		$this_field_options = $fields_options;
@@ -297,7 +355,7 @@ function cf7_authorize_wpcf7_metabox( $cf7 ) {
 		);
 	}
 
-	// add a hidden row to use for cloning
+	// add a hidden row to use for cloning.
 	$fields['custom-field-template'] = array(
 		'label'     => '<input type="text" placeholder="Custom Field Name" name="custom-field-name" /> Field',
 		'docs_url'  => 'http://andrewrminion.com/2017/02/contact-form-7-to-authorize-net/',
@@ -645,11 +703,13 @@ function cf7_authorize_net_parse_response( $api_response, $authorization_type, $
 
 /**
  * Add custom content to WPCF7 output response
- * @param  string $output         HTML string of output
- * @param  string $class          string with HTML classes for the wrapper
- * @param  string $content        string with response from WPCF7 plugin
- * @param  array  $modified_items modified responses
- * @return string HTML string of output
+ *
+ * @param  string $output         HTML string of output.
+ * @param  string $class          String with HTML classes for the wrapper.
+ * @param  string $content        String with response from WPCF7 plugin.
+ * @param  array  $modified_items Modified responses.
+ *
+ * @return string HTML string of output.
  */
 function cf7_authorize_response( $output, $class, $content, $modified_items ) {
 	if ( $modified_items['mailSent'] !== false ) {
@@ -662,19 +722,21 @@ function cf7_authorize_response( $output, $class, $content, $modified_items ) {
 }
 
 /**
- * Add custom content to WPCF7 output JSON response
- * @param  array $items          array of response info
- * @param  array $result         array of results
- * @param  array $modified_items modified responses
- * @return array array of responses to show
+ * Add custom content to WPCF7 output JSON response.
+ *
+ * @param  array $items          Array of response info.
+ * @param  array $result         Array of results.
+ * @param  array $modified_items Modified responses.
+ *
+ * @return array array of responses to show.
  */
 function cf7_authorize_response_json( $items, $result, $modified_items ) {
 	if ( $modified_items['mailSent'] !== false ) {
 		$items['message'] .= $modified_items['message'];
 	} else {
-		$items['message'] = $modified_items['message'];
+		$items['message']  = $modified_items['message'];
 		$items['mailSent'] = $modified_items['mailSent'];
-		$items['status'] = 'validation_failed';
+		$items['status']   = 'validation_failed';
 	}
 
 	return $items;
