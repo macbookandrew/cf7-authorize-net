@@ -161,7 +161,8 @@ function cf7_authorize_api_settings_section_callback() {
  * @return void
  * @since 1.0.0
  */
-function cf7_authorize_options_page() { ?>
+function cf7_authorize_options_page() {
+	?>
 	<div class="wrap">
 	   <h2>Contact Form 7 to Authorize.net</h2>
 		<form action="options.php" method="post">
