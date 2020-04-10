@@ -1,16 +1,30 @@
 # Contact Form 7 to Authorize.net #
-**Contributors:** [macbookandrew](https://profiles.wordpress.org/macbookandrew)  
-**Tags:** contact form, contact form 7, cf7, contactform7, forms, form, payment, processing, credit card, merchant, Authorize.net, Visa, MasterCard, American Express  
-**Donate link:** https://cash.me/$AndrewRMinionDesign  
-**Requires at least:** 4.3  
-**Tested up to:** 4.7.2  
-**Stable tag:** 1.3.0  
-**License:** GPL2  
+**Contributors:** [macbookandrew](https://profiles.wordpress.org/macbookandrew)
+**Tags:** contact form, contact form 7, cf7, contactform7, forms, form, payment, processing, credit card, merchant, Authorize.net, Visa, MasterCard, American Express
+**Donate link:** https://cash.me/$AndrewRMinionDesign
+**Requires at least:** 4.3
+**Tested up to:** 4.7.2
+**Stable tag:** 1.4.0
+**License:** GPL2
 
 Adds Authorize.net support to Contact Form 7 forms
 
 ## Description ##
 Adds Authorize.net support to Contact Form 7 forms, adding the capability to match specific form fields to Authorize.net payment fields.
+
+Note: if downloading from source, you’ll need to build a release:
+
+```
+# Install the Authorize.net SDK
+composer Install
+
+# Install build tooling
+npm install
+
+# Minify assets
+grunt
+# That will start a watch process. Now modify a JS and a SCSS file to trigger the build step, then kill the grunt process.
+```
 
 # Notes #
 Some fields are required by Authorize.net for the payment to go through:
@@ -40,22 +54,25 @@ A couple of fields have default values if you don’t explicitly set them (tip: 
 
 	<fieldset>
 	<legend>Credit Card Information</legend>
-	
+
 	<p><label class="required" for="credit-card">Credit Card</label>
 	[text* credit-card placeholder "xxxx xxxx xxxx xxxx"]</p>
-	
+
 	<p><label class="required" for="cvv">Verification Code</label>
 	[number* cvv min:000 max:9999 placeholder "123"]</p>
-	
+
 	<p><label class="required" for="expiration-date">Expiration Date</label>
 	[text* expiration-date placeholder "01/2018"]</p>
-	
+
 	</fieldset>
 
 
 ## Changelog ##
 
-### 1.3.3 ###
+### 1.4.0 ###
+ - Update Authorize.net SDK
+
+### 1.3.0 ###
  - Add support for recurring/subscription billing (ARB)
 
 ### 1.2.0 ###
