@@ -1,0 +1,8 @@
+{
+    "name": "andrewminion/cf7-authorize-net",
+    "description": "Auhorize.net processing for Contact Form 7 forms",
+    "type": "wp-plugin",
+    "require": {
+        "authorizenet/authorizenet": "^2.0"
+    }
+}

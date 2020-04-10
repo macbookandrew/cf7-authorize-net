@@ -1,3 +1,0 @@
-[submodule "authorize-sdk"]
-	path = authorize-sdk
-	url = git@github.com:AuthorizeNet/sdk-php.git
