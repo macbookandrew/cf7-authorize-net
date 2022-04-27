@@ -28,6 +28,6 @@
     "grunt-wp-i18n": "^1.0.0",
     "grunt-wp-readme-to-markdown": "^2.0.1",
     "pixrem": "^3.0.0",
-    "postcss": "^5.0.19"
+    "postcss": "^7.0.36"
   }
 }
